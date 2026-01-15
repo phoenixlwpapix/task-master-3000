@@ -10,8 +10,11 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "Todo List — Neo-Brutalist",
-  description: "A bold, unapologetic todo list built with Next.js and Convex.",
+  title: "NO EXCUSES.",
+  description: "Stop procrastinating. Write it down. Destroy it. An unapologetic task manager.",
+  icons: {
+    icon: "/favicon.ico",
+  },
   keywords: ["todo", "productivity", "convex", "nextjs", "neo-brutalism"],
 };
 

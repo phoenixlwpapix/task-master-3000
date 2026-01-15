@@ -59,6 +59,40 @@ function MainContent() {
   const toggleTask = useMutation(api.tasks.toggle);
   const removeTask = useMutation(api.tasks.remove);
 
+  // Optimistic UI states
+  const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
+  const [pendingCompletes, setPendingCompletes] = useState<Map<string, boolean>>(new Map());
+
+  const handleToggle = async (id: any, currentStatus: boolean) => {
+    // 1. Instant Visual Feedback
+    setPendingCompletes(prev => new Map(prev).set(id, !currentStatus));
+
+    // 2. Perform Mutation
+    await toggleTask({ id });
+
+    // 3. Clear Optimistic State (Let server data take over)
+    setPendingCompletes(prev => {
+      const next = new Map(prev);
+      next.delete(id);
+      return next;
+    });
+  };
+
+  const handleDelete = async (id: any) => {
+    // 1. Instant Visual Feedback
+    setDeletingIds(prev => new Set(prev).add(id));
+
+    // 2. Wait for "Fall off" animation (600ms) to complete
+    setTimeout(async () => {
+      await removeTask({ id });
+      setDeletingIds(prev => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
+    }, 700);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTask.trim() || isSubmitting) return;
@@ -95,7 +129,9 @@ function MainContent() {
                 <span className="font-bold uppercase tracking-widest text-sm bg-neo-yellow px-2 border-2 border-black inline-block w-fit mb-1 transform -rotate-2">
                   Neo-Brutal
                 </span>
-                <span className="font-black text-xl uppercase">Task Master 3000</span>
+                <span className="font-black text-xl uppercase">
+                  {totalCount === 0 ? "SLACKER" : totalCount > 5 ? "HOARDER" : "Task Master 3000"}
+                </span>
               </div>
             </div>
 
@@ -155,7 +191,7 @@ function MainContent() {
               type="text"
               value={newTask}
               onChange={(e) => setNewTask(e.target.value)}
-              placeholder="ENTER NEW MISSION..."
+              placeholder="TYPE IT."
               className="w-full h-20 bg-white border-4 border-black px-6 text-2xl font-bold placeholder:text-black/30 focus:outline-none focus:bg-neo-yellow focus:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all duration-200"
             />
             <button
@@ -180,48 +216,64 @@ function MainContent() {
                 <div className="inline-block bg-neo-yellow border-4 border-black p-4 rounded-full mb-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
                   <ArrowRight size={48} className="stroke-[3px]" />
                 </div>
-                <h3 className="text-3xl font-black uppercase mb-2">System Idle</h3>
-                <p className="font-bold text-gray-500">Initiate your first task protocol above.</p>
+                <h3 className="text-3xl font-black uppercase mb-2">NOTHING TO DESTROY.</h3>
+                <p className="font-bold text-gray-500">BORING.</p>
               </div>
             ) : (
-              tasks.map((task) => (
-                <div
-                  key={task._id}
-                  className={`group relative bg-white border-4 border-black p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 transition-all duration-200 flex items-center gap-6 ${task.isCompleted ? 'bg-gray-100' : ''}`}
-                >
-                  <button
-                    onClick={() => toggleTask({ id: task._id })}
-                    className={`flex-shrink-0 w-8 h-8 border-4 border-black flex items-center justify-center transition-all duration-200 ${task.isCompleted
-                      ? 'bg-neo-green bg-[#4ade80] shadow-none translate-x-[2px] translate-y-[2px]'
-                      : 'bg-white hover:bg-neo-yellow shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[3px] active:translate-y-[3px]'
-                      }`}
-                  >
-                    {task.isCompleted && <Check className="stroke-[5px] w-5 h-5" />}
-                  </button>
+              tasks.map((task) => {
+                // Determine status considering optimistic updates
+                const isCompleted = pendingCompletes.has(task._id)
+                  ? pendingCompletes.get(task._id)!
+                  : task.isCompleted;
 
-                  <span
-                    className={`flex-grow text-xl font-bold uppercase tracking-tight transition-all duration-300 ${task.isCompleted ? 'line-through decoration-4 decoration-black text-gray-400' : 'text-black'
-                      }`}
+                return (
+                  <div
+                    key={task._id}
+                    className={`group relative bg-white border-4 border-black p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] flex items-center gap-6 
+                    transition-shadow duration-200 
+                    hover:translate-y-[-4px] hover:shadow-[10px_10px_0px_0px_rgba(0,0,0,1)]
+                    ${isCompleted ? 'bg-gray-200 animate-destroy' : ''}
+                    ${deletingIds.has(task._id) ? 'animate-delete' : ''}
+                    `}
                   >
-                    {task.text}
-                  </span>
+                    <button
+                      onClick={() => handleToggle(task._id, isCompleted)}
+                      className={`flex-shrink-0 w-8 h-8 border-4 border-black flex items-center justify-center transition-colors duration-200 ${isCompleted
+                        ? 'bg-black shadow-none translate-x-[2px] translate-y-[2px]'
+                        : 'bg-white hover:bg-neo-yellow shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[3px] active:translate-y-[3px]'
+                        }`}
+                    >
+                      {isCompleted && <Check className="stroke-[5px] w-5 h-5 text-neo-yellow" />}
+                    </button>
 
-                  <button
-                    onClick={() => removeTask({ id: task._id })}
-                    className="opacity-0 group-hover:opacity-100 focus:opacity-100 p-2 bg-white border-4 border-black text-black hover:bg-neo-red hover:text-white transition-all duration-200 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[2px] active:translate-y-[2px]"
-                    aria-label="Delete"
-                  >
-                    <Trash2 className="stroke-[3px]" size={20} />
-                  </button>
+                    <span
+                      className={`flex-grow text-xl font-bold uppercase tracking-tight transition-colors duration-300 ${isCompleted ? 'text-gray-500 scratched' : 'text-black'
+                        }`}
+                    >
+                      {task.text}
+                    </span>
 
-                  {/* Decorative badge for completed items */}
-                  {task.isCompleted && (
-                    <div className="absolute -top-3 -right-2 bg-neo-yellow border-4 border-black px-2 py-0.5 text-xs font-black uppercase rotate-6 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] pointer-events-none">
-                      Done
-                    </div>
-                  )}
-                </div>
-              ))
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        handleDelete(task._id);
+                      }}
+                      className="opacity-0 group-hover:opacity-100 focus:opacity-100 p-2 bg-white border-4 border-black text-black hover:bg-neo-red hover:text-white transition-all duration-200 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[2px] active:translate-y-[2px]"
+                      aria-label="Delete"
+                    >
+                      <Trash2 className="stroke-[3px]" size={20} />
+                    </button>
+
+                    {/* Decorative badge for completed items */}
+                    {isCompleted && (
+                      <div className="absolute -top-3 -right-2 bg-neo-yellow border-4 border-black px-2 py-0.5 text-xs font-black uppercase rotate-6 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] pointer-events-none animate-stomp z-20">
+                        Done
+                      </div>
+                    )}
+                  </div>
+                );
+              })
             )}
           </div>
         </section>
