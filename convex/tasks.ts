@@ -1,11 +1,18 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
+import { getAuthUserId } from "@convex-dev/auth/server";
 
-// Get all tasks
+// Get all tasks for the current user
 export const get = query({
     args: {},
     handler: async (ctx) => {
-        return await ctx.db.query("tasks").collect();
+        const userId = await getAuthUserId(ctx);
+        if (!userId) return []; // Return empty if not logged in
+
+        return await ctx.db
+            .query("tasks")
+            .withIndex("by_user", (q) => q.eq("userId", userId))
+            .collect();
     },
 });
 
@@ -13,9 +20,13 @@ export const get = query({
 export const add = mutation({
     args: { text: v.string() },
     handler: async (ctx, args) => {
+        const userId = await getAuthUserId(ctx);
+        if (!userId) throw new Error("Unauthorized");
+
         await ctx.db.insert("tasks", {
             text: args.text,
             isCompleted: false,
+            userId,
         });
     },
 });
@@ -24,12 +35,17 @@ export const add = mutation({
 export const toggle = mutation({
     args: { id: v.id("tasks") },
     handler: async (ctx, args) => {
+        const userId = await getAuthUserId(ctx);
+        if (!userId) throw new Error("Unauthorized");
+
         const task = await ctx.db.get(args.id);
-        if (task) {
-            await ctx.db.patch(args.id, {
-                isCompleted: !task.isCompleted,
-            });
+        if (!task || task.userId !== userId) {
+            throw new Error("Unauthorized access to task");
         }
+
+        await ctx.db.patch(args.id, {
+            isCompleted: !task.isCompleted,
+        });
     },
 });
 
@@ -37,6 +53,14 @@ export const toggle = mutation({
 export const remove = mutation({
     args: { id: v.id("tasks") },
     handler: async (ctx, args) => {
+        const userId = await getAuthUserId(ctx);
+        if (!userId) throw new Error("Unauthorized");
+
+        const task = await ctx.db.get(args.id);
+        if (!task || task.userId !== userId) {
+            throw new Error("Unauthorized access to task");
+        }
+
         await ctx.db.delete(args.id);
     },
 });

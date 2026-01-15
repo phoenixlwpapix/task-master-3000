@@ -1,11 +1,55 @@
 "use client";
 
 import { useState } from "react";
-import { useQuery, useMutation } from "convex/react";
+import { useQuery, useMutation, Authenticated, Unauthenticated, AuthLoading } from "convex/react";
+import { useAuthActions } from "@convex-dev/auth/react";
 import { api } from "../../convex/_generated/api";
-import { Plus, Trash2, Check, Star, ArrowRight, Zap, Skull } from "lucide-react";
+import { Plus, Trash2, Check, Star, ArrowRight, Zap, Skull, LogOut } from "lucide-react";
+import { AuthForm } from "../components/AuthForm";
 
 export default function Home() {
+  return (
+    <main className="min-h-screen text-black font-space">
+      <AuthLoading>
+        <div className="flex flex-col h-screen w-full items-center justify-center gap-6">
+          <Star size={80} className="stroke-[3px] fill-neo-yellow animate-spin-slow" />
+          <div className="font-black text-2xl uppercase tracking-widest animate-pulse">
+            Loading System...
+          </div>
+        </div>
+      </AuthLoading>
+
+      <Unauthenticated>
+        <div className="flex flex-col min-h-screen w-full items-center justify-center p-4 relative overflow-hidden">
+          <div className="absolute top-12 left-12 hidden lg:block animate-spin-slow pointer-events-none opacity-20">
+            <Star size={120} className="stroke-[3px] fill-neo-yellow" />
+          </div>
+
+          <div className="mb-12 text-center relative z-10 animate-fade-in-up">
+            <div className="inline-block bg-neo-red border-4 border-black p-3 mb-4 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] rotate-3">
+              <Skull size={48} className="stroke-[3px] text-white" />
+            </div>
+            <h1 className="text-5xl md:text-7xl font-black uppercase tracking-tighter mb-2">
+              Task Master <br /><span className="text-neo-red text-stroke">3000</span>
+            </h1>
+            <p className="font-bold border-4 border-black bg-white px-4 py-2 inline-block transform -rotate-1 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+              Restricted Access. Credentials Required.
+            </p>
+          </div>
+
+          <AuthForm />
+        </div>
+      </Unauthenticated>
+
+      <Authenticated>
+        <MainContent />
+      </Authenticated>
+    </main>
+  );
+}
+
+function MainContent() {
+  const { signOut } = useAuthActions();
   const [newTask, setNewTask] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -27,7 +71,15 @@ export default function Home() {
   const totalCount = tasks ? tasks.length : 0;
 
   return (
-    <main className="min-h-screen p-4 md:p-8 lg:p-12 pb-32 max-w-7xl mx-auto">
+    <div className="p-4 md:p-8 lg:p-12 pb-32 max-w-7xl mx-auto min-h-screen">
+      <button
+        onClick={() => signOut()}
+        className="fixed top-6 right-6 z-50 bg-white border-4 border-black p-3 hover:bg-neo-red hover:text-white transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-y-1 active:translate-x-1 active:shadow-none group"
+        title="Sign Out"
+      >
+        <LogOut className="stroke-[3px] group-hover:stroke-white transition-colors" size={24} />
+      </button>
+
       {/* Decorative Elements */}
       <div className="fixed top-12 left-12 hidden xl:block animate-spin-slow pointer-events-none z-0 opacity-20">
         <Star size={120} className="stroke-[3px] fill-neo-yellow" />
@@ -36,7 +88,7 @@ export default function Home() {
         <Zap size={120} className="stroke-[3px] fill-neo-red" />
       </div>
 
-      <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-12">
+      <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-12 mt-12 lg:mt-0">
 
         {/* Left Column: Header & Stats */}
         <section className="lg:col-span-5 flex flex-col gap-8">
@@ -130,8 +182,8 @@ export default function Home() {
                   <button
                     onClick={() => toggleTask({ id: task._id })}
                     className={`flex-shrink-0 w-8 h-8 border-4 border-black flex items-center justify-center transition-all duration-200 ${task.isCompleted
-                        ? 'bg-neo-green bg-[#4ade80] shadow-none translate-x-[2px] translate-y-[2px]'
-                        : 'bg-white hover:bg-neo-yellow shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[3px] active:translate-y-[3px]'
+                      ? 'bg-neo-green bg-[#4ade80] shadow-none translate-x-[2px] translate-y-[2px]'
+                      : 'bg-white hover:bg-neo-yellow shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[3px] active:translate-y-[3px]'
                       }`}
                   >
                     {task.isCompleted && <Check className="stroke-[5px] w-5 h-5" />}
@@ -166,7 +218,7 @@ export default function Home() {
       </div>
 
       {/* Footer / Marquee */}
-      <footer className="fixed bottom-0 left-0 w-full bg-neo-yellow border-t-4 border-black py-3 overflow-hidden z-50">
+      <footer className="fixed bottom-0 left-0 w-full bg-neo-yellow border-t-4 border-black py-3 overflow-hidden z-20">
         <div className="whitespace-nowrap animate-marquee font-black uppercase tracking-widest text-sm">
           Make it happen • No excuses • Just do it • Ship it • Build fast • Break things • Make it happen • No excuses • Just do it • Ship it • Build fast • Break things • Make it happen • No excuses • Just do it • Ship it • Build fast • Break things
         </div>
@@ -174,15 +226,15 @@ export default function Home() {
 
       {/* Marquee Animation */}
       <style jsx>{`
-        @keyframes marquee {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
-        }
-        .animate-marquee {
-          display: inline-block;
-          animation: marquee 20s linear infinite;
-        }
-      `}</style>
-    </main>
+         @keyframes marquee {
+           0% { transform: translateX(0); }
+           100% { transform: translateX(-50%); }
+         }
+         .animate-marquee {
+           display: inline-block;
+           animation: marquee 20s linear infinite;
+         }
+       `}</style>
+    </div>
   );
 }
