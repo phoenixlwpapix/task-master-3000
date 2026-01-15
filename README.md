@@ -1,36 +1,74 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Task Master 3000 💀
 
-## Getting Started
+A bold, unapologetic, **Neo-brutalist Todo Application** built with **Next.js 16** and **Convex**.
 
-First, run the development server:
+This project isn't just a todo list; it's a statement. It rejects the polished "corporate SaaS" aesthetic in favor of raw structure, high-contrast colors, and mechanical interactions.
+
+![Neo-Brutalism Design](https://placehold.co/1200x600/FFFDF5/000000?text=Task+Master+3000)
+*(Replace with actual screenshot)*
+
+## ⚡ Tech Stack
+
+- **Framework**: [Next.js 16](https://nextjs.org/) (App Router)
+- **Database / Backend**: [Convex](https://www.convex.dev/) (Real-time, reactive)
+- **Styling**: [Tailwind CSS v4](https://tailwindcss.com/)
+- **Icons**: [Lucide React](https://lucide.dev/)
+- **Font**: [Space Grotesk](https://fonts.google.com/specimen/Space+Grotesk)
+
+## 🎨 Design Philosophy: Neo-Brutalism
+
+- **Hard Borders**: Every element has a `4px` solid black border. No exceptions.
+- **Vibrant Palette**: Cream (`#FFFDF5`) canvas with Hot Red (`#FF6B6B`), Vivid Yellow (`#FFD93D`), and Soft Violet (`#C4B5FD`) accents.
+- **Mechanical Feel**: Buttons "press" down physically (translate + shadow removal) rather than fading.
+- **Visual Weight**: Deep, solid black shadows (`8px`, `12px`) offset at 45 degrees.
+- **Typography**: Massive, uppercase `Space Grotesk` headings for maximum impact.
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Node.js 18+
+- pnpm
+
+### 1. Clone & Install
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone <your-repo-url>
+cd test-todo-convex
+pnpm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Setup Convex
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Initialize your Convex database project:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+pnpm convex dev
+```
 
-## Learn More
+This will prompt you to log in to Convex and select/create a project. It will save your deployment URL to `.env.local` automatically.
 
-To learn more about Next.js, take a look at the following resources:
+### 3. Run Development Server
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+pnpm dev
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Open [http://localhost:3000](http://localhost:3000) to see the app.
 
-## Deploy on Vercel
+## 🛠 Features
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- **Real-time Sync**: Tasks update instantly across all devices/windows using Convex's reactive subscriptions.
+- **Tasks**: Add, toggle (complete/incomplete), and delete tasks.
+- **Progress Tracking**: Visual progress bar and stats counter.
+- **Responsive Design**: Mobile-friendly layout that maintains the neo-brutalist aesthetic.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 📂 Project Structure
+
+- `convex/`: Backend functions (database schema, queries, mutations).
+- `src/app/`: Next.js App Router pages and layouts.
+- `src/app/globals.css`: Global styles, CSS variables, and custom animations.
+
+---
+
+**Get Shit Done.**

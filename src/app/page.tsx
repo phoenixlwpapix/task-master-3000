@@ -1,65 +1,188 @@
-import Image from "next/image";
+"use client";
+
+import { useState } from "react";
+import { useQuery, useMutation } from "convex/react";
+import { api } from "../../convex/_generated/api";
+import { Plus, Trash2, Check, Star, ArrowRight, Zap, Skull } from "lucide-react";
 
 export default function Home() {
+  const [newTask, setNewTask] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const tasks = useQuery(api.tasks.get);
+  const addTask = useMutation(api.tasks.add);
+  const toggleTask = useMutation(api.tasks.toggle);
+  const removeTask = useMutation(api.tasks.remove);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newTask.trim() || isSubmitting) return;
+    setIsSubmitting(true);
+    await addTask({ text: newTask.trim() });
+    setNewTask("");
+    setIsSubmitting(false);
+  };
+
+  const completedCount = tasks ? tasks.filter((t) => t.isCompleted).length : 0;
+  const totalCount = tasks ? tasks.length : 0;
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+    <main className="min-h-screen p-4 md:p-8 lg:p-12 pb-32 max-w-7xl mx-auto">
+      {/* Decorative Elements */}
+      <div className="fixed top-12 left-12 hidden xl:block animate-spin-slow pointer-events-none z-0 opacity-20">
+        <Star size={120} className="stroke-[3px] fill-neo-yellow" />
+      </div>
+      <div className="fixed bottom-12 right-12 hidden xl:block pointer-events-none z-0 opacity-20 rotate-12">
+        <Zap size={120} className="stroke-[3px] fill-neo-red" />
+      </div>
+
+      <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-12">
+
+        {/* Left Column: Header & Stats */}
+        <section className="lg:col-span-5 flex flex-col gap-8">
+          {/* Main Title Card */}
+          <div className="bg-neo-white border-4 border-black p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] transition-all duration-300">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="bg-neo-red w-16 h-16 border-4 border-black flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                <Skull size={32} className="stroke-[3px]" />
+              </div>
+              <div className="flex flex-col">
+                <span className="font-bold uppercase tracking-widest text-sm bg-neo-yellow px-2 border-2 border-black inline-block w-fit mb-1 transform -rotate-2">
+                  Neo-Brutal
+                </span>
+                <span className="font-black text-xl uppercase">Task Master 3000</span>
+              </div>
+            </div>
+
+            <h1 className="text-6xl md:text-7xl font-black leading-[0.85] tracking-tighter uppercase mb-6">
+              Get <br />
+              <span className="text-neo-red text-stroke">Shit</span> <br />
+              Done.
+            </h1>
+
+            <p className="font-medium text-lg border-l-4 border-black pl-4 leading-tight">
+              An unapologetic task manager for the bold. structure your chaos. dominate your day.
+            </p>
+          </div>
+
+          {/* Stats Card */}
+          <div className="bg-neo-violet border-4 border-black p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transform rotate-1 hover:rotate-0 transition-transform duration-300">
+            <div className="flex justify-between items-end mb-4">
+              <h3 className="font-black text-3xl uppercase">Progress</h3>
+              <Star className="fill-black animate-pulse" />
+            </div>
+            <div className="w-full bg-white h-8 border-4 border-black p-1">
+              <div
+                className="h-full bg-black transition-all duration-500 ease-out"
+                style={{ width: `${totalCount > 0 ? (completedCount / totalCount) * 100 : 0}%` }}
+              />
+            </div>
+            <div className="mt-4 flex justify-between font-bold text-xl font-mono">
+              <span>{completedCount} DONE</span>
+              <span>{totalCount} TOTAL</span>
+            </div>
+          </div>
+        </section>
+
+        {/* Right Column: Task List */}
+        <section className="lg:col-span-7 flex flex-col gap-8">
+
+          {/* Input Area */}
+          <form onSubmit={handleSubmit} className="relative group">
+            <input
+              type="text"
+              value={newTask}
+              onChange={(e) => setNewTask(e.target.value)}
+              placeholder="ENTER NEW MISSION..."
+              className="w-full h-20 bg-white border-4 border-black px-6 text-2xl font-bold placeholder:text-black/30 focus:outline-none focus:bg-neo-yellow focus:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all duration-200"
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            <button
+              type="submit"
+              disabled={isSubmitting || !newTask.trim()}
+              className="absolute right-3 top-3 bottom-3 bg-neo-red border-4 border-black px-6 flex items-center justify-center font-black uppercase text-sm tracking-wider hover:bg-black hover:text-white transition-all duration-200 active:translate-y-1 active:translate-x-1 active:shadow-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] disabled:opacity-50 disabled:cursor-not-allowed group-focus-within:right-4 group-focus-within:top-4 transition-all"
+            >
+              Add <Plus className="ml-2 stroke-[4px]" size={18} />
+            </button>
+          </form>
+
+          {/* Tasks Container */}
+          <div className="space-y-6">
+            {tasks === undefined ? (
+              // Loading Skeleton
+              [1, 2, 3].map((i) => (
+                <div key={i} className="h-24 bg-white border-4 border-black opacity-50 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]" />
+              ))
+            ) : tasks.length === 0 ? (
+              // Empty State
+              <div className="bg-neo-white border-4 border-black p-12 text-center shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] border-dashed">
+                <div className="inline-block bg-neo-yellow border-4 border-black p-4 rounded-full mb-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                  <ArrowRight size={48} className="stroke-[3px]" />
+                </div>
+                <h3 className="text-3xl font-black uppercase mb-2">System Idle</h3>
+                <p className="font-bold text-gray-500">Initiate your first task protocol above.</p>
+              </div>
+            ) : (
+              tasks.map((task) => (
+                <div
+                  key={task._id}
+                  className={`group relative bg-white border-4 border-black p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 transition-all duration-200 flex items-center gap-6 ${task.isCompleted ? 'bg-gray-100' : ''}`}
+                >
+                  <button
+                    onClick={() => toggleTask({ id: task._id })}
+                    className={`flex-shrink-0 w-8 h-8 border-4 border-black flex items-center justify-center transition-all duration-200 ${task.isCompleted
+                        ? 'bg-neo-green bg-[#4ade80] shadow-none translate-x-[2px] translate-y-[2px]'
+                        : 'bg-white hover:bg-neo-yellow shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[3px] active:translate-y-[3px]'
+                      }`}
+                  >
+                    {task.isCompleted && <Check className="stroke-[5px] w-5 h-5" />}
+                  </button>
+
+                  <span
+                    className={`flex-grow text-xl font-bold uppercase tracking-tight transition-all duration-300 ${task.isCompleted ? 'line-through decoration-4 decoration-black text-gray-400' : 'text-black'
+                      }`}
+                  >
+                    {task.text}
+                  </span>
+
+                  <button
+                    onClick={() => removeTask({ id: task._id })}
+                    className="opacity-0 group-hover:opacity-100 focus:opacity-100 p-2 bg-white border-4 border-black text-black hover:bg-neo-red hover:text-white transition-all duration-200 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[2px] active:translate-y-[2px]"
+                    aria-label="Delete"
+                  >
+                    <Trash2 className="stroke-[3px]" size={20} />
+                  </button>
+
+                  {/* Decorative badge for completed items */}
+                  {task.isCompleted && (
+                    <div className="absolute -top-3 -right-2 bg-neo-yellow border-4 border-black px-2 py-0.5 text-xs font-black uppercase rotate-6 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] pointer-events-none">
+                      Done
+                    </div>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
+        </section>
+      </div>
+
+      {/* Footer / Marquee */}
+      <footer className="fixed bottom-0 left-0 w-full bg-neo-yellow border-t-4 border-black py-3 overflow-hidden z-50">
+        <div className="whitespace-nowrap animate-marquee font-black uppercase tracking-widest text-sm">
+          Make it happen • No excuses • Just do it • Ship it • Build fast • Break things • Make it happen • No excuses • Just do it • Ship it • Build fast • Break things • Make it happen • No excuses • Just do it • Ship it • Build fast • Break things
         </div>
-      </main>
-    </div>
+      </footer>
+
+      {/* Marquee Animation */}
+      <style jsx>{`
+        @keyframes marquee {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+        .animate-marquee {
+          display: inline-block;
+          animation: marquee 20s linear infinite;
+        }
+      `}</style>
+    </main>
   );
 }
