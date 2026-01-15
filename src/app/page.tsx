@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useQuery, useMutation, Authenticated, Unauthenticated, AuthLoading } from "convex/react";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { api } from "../../convex/_generated/api";
-import { Plus, Trash2, Check, Star, ArrowRight, Zap, Skull, LogOut } from "lucide-react";
+import { Plus, Trash2, Check, Star, ArrowRight, Zap, Skull, LogOut, User } from "lucide-react";
 import { AuthForm } from "../components/AuthForm";
 
 export default function Home() {
@@ -53,6 +53,7 @@ function MainContent() {
   const [newTask, setNewTask] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const currentUser = useQuery(api.users.currentUser);
   const tasks = useQuery(api.tasks.get);
   const addTask = useMutation(api.tasks.add);
   const toggleTask = useMutation(api.tasks.toggle);
@@ -72,14 +73,6 @@ function MainContent() {
 
   return (
     <div className="p-4 md:p-8 lg:p-12 pb-32 max-w-7xl mx-auto min-h-screen">
-      <button
-        onClick={() => signOut()}
-        className="fixed top-6 right-6 z-50 bg-white border-4 border-black p-3 hover:bg-neo-red hover:text-white transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-y-1 active:translate-x-1 active:shadow-none group"
-        title="Sign Out"
-      >
-        <LogOut className="stroke-[3px] group-hover:stroke-white transition-colors" size={24} />
-      </button>
-
       {/* Decorative Elements */}
       <div className="fixed top-12 left-12 hidden xl:block animate-spin-slow pointer-events-none z-0 opacity-20">
         <Star size={120} className="stroke-[3px] fill-neo-yellow" />
@@ -88,10 +81,10 @@ function MainContent() {
         <Zap size={120} className="stroke-[3px] fill-neo-red" />
       </div>
 
-      <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-12 mt-12 lg:mt-0">
+      <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-12">
 
-        {/* Left Column: Header & Stats */}
-        <section className="lg:col-span-5 flex flex-col gap-8">
+        {/* Left Column: Header & Stats - 手机端排在下方 */}
+        <section className="lg:col-span-5 flex flex-col gap-8 order-2 lg:order-1">
           {/* Main Title Card */}
           <div className="bg-neo-white border-4 border-black p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] transition-all duration-300">
             <div className="flex items-center gap-4 mb-4">
@@ -136,8 +129,25 @@ function MainContent() {
           </div>
         </section>
 
-        {/* Right Column: Task List */}
-        <section className="lg:col-span-7 flex flex-col gap-8">
+        {/* Right Column: Task List - 手机端排在上方 */}
+        <section className="lg:col-span-7 flex flex-col gap-6 order-1 lg:order-2">
+
+          {/* User Info Bar */}
+          <div className="flex items-center justify-between gap-4 bg-white border-4 border-black p-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+            <div className="flex items-center gap-2 min-w-0">
+              <User className="stroke-[3px] flex-shrink-0" size={20} />
+              <span className="font-bold text-sm uppercase tracking-tight truncate">
+                {currentUser?.email || "Loading..."}
+              </span>
+            </div>
+            <button
+              onClick={() => signOut()}
+              className="flex-shrink-0 flex items-center gap-2 bg-neo-red border-4 border-black px-4 py-2 font-bold text-sm uppercase hover:bg-black hover:text-white transition-all shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] active:translate-y-[2px] active:translate-x-[2px] active:shadow-none"
+            >
+              <LogOut className="stroke-[3px]" size={16} />
+              <span className="hidden sm:inline">Sign Out</span>
+            </button>
+          </div>
 
           {/* Input Area */}
           <form onSubmit={handleSubmit} className="relative group">

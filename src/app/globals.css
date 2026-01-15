@@ -48,6 +48,13 @@ body {
   color: var(--bg-black);
 }
 
+/* Input Selection - 确保在黄色背景上选中文字可见 */
+input::selection,
+textarea::selection {
+  background-color: #000000 !important;
+  color: #FFFFFF !important;
+}
+
 /* Scrollbar */
 ::-webkit-scrollbar {
   width: 12px;
