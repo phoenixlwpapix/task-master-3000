@@ -163,12 +163,8 @@ function MainContent() {
               <span>{totalCount} TOTAL</span>
             </div>
           </div>
-        </section>
 
-        {/* Right Column: Task List - 手机端排在上方 */}
-        <section className="lg:col-span-7 flex flex-col gap-6 order-1 lg:order-2">
-
-          {/* User Info Bar */}
+          {/* User Info Bar - Moved here */}
           <div className="flex items-center justify-between gap-4 bg-white border-4 border-black p-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
             <div className="flex items-center gap-2 min-w-0">
               <User className="stroke-[3px] flex-shrink-0" size={20} />
@@ -184,6 +180,12 @@ function MainContent() {
               <span className="hidden sm:inline">Sign Out</span>
             </button>
           </div>
+        </section>
+
+        {/* Right Column: Task List - 手机端排在上方 */}
+        <section className="lg:col-span-7 flex flex-col gap-6 order-1 lg:order-2">
+
+
 
           {/* Input Area */}
           <form onSubmit={handleSubmit} className="relative group">
