@@ -12,6 +12,7 @@ export const get = query({
         return await ctx.db
             .query("tasks")
             .withIndex("by_user", (q) => q.eq("userId", userId))
+            .order("desc")
             .collect();
     },
 });
